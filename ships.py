@@ -12,7 +12,9 @@ class Point:
 	def __repr__(self) -> str:
 		return f"({self.x}, {self.y})"
 
-	#def __eq__(self,other:Point) -> bool: return self.x == other.x and self.y == other.y
+	def __eq__(self,other:object) -> bool:
+		if type(other) != Point: return False
+		return self.x == other.x and self.y == other.y
 
 class Hit:
 
