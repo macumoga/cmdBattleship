@@ -1,5 +1,5 @@
 import ships
-import render as render
+import render
 from random import randint
 
 def parseCoord(raw:str) -> ships.Point | None:
@@ -15,8 +15,9 @@ def parseCoord(raw:str) -> ships.Point | None:
 	if len(col_str) != 1 or not col_str.isalpha():
 		return None
 	try:
-		x = ord(col_str) - ord('A') + 1
-		y = int(row_str)
+		# Letters (A-J) correspond to y, numbers (1-10) correspond to x
+		y = ord(col_str) - ord('A') + 1
+		x = int(row_str)
 	except ValueError:
 		return None
 	return ships.Point(x, y)
@@ -65,7 +66,7 @@ class PlayerTerminal(Actor):
 		render.displayHitmap(self.userHits)
 
 		while 1:
-			rtv = parseCoord(input("x y (A-J 1-10): "))
+			rtv = parseCoord(input("y x (A-J 1-10): "))
 			if rtv is None: continue
 			if rtv.x != ships.clamp(rtv.x,1,10) or rtv.y != ships.clamp(rtv.y,1,10):
 				col_label = chr(ord('A') + rtv.x - 1) if 1 <= rtv.x <= 26 else str(rtv.x)
@@ -84,7 +85,7 @@ class PlayerTerminal(Actor):
 		render.displayMessage(f"{self.label}: Placing ship {tShip.info.label}.")
 
 		while 1:
-			rtv:ships.Point | None = parseCoord(input("x y (A-J 1-10): "))
+			rtv:ships.Point | None = parseCoord(input("y x (A-J 1-10): "))
 			if rtv is None: continue
 
 			sdir:ships.Point
@@ -151,24 +152,28 @@ class SimpleNPC(Actor):
 		self.userShips.append(tShip)
 		return
 
-
-# --- ILYAS'S ADDITIONS BELOW ---
-
 def main():
 	render.displayMessage("Welcome to Battleship!")
 
-	player:Actor = PlayerTerminal("Player 1")
-	enemy:Actor = SimpleNPC()
+	player = PlayerTerminal("Player 1")
+	enemy = SimpleNPC()
 	
 	# Setup Phase
-	fleet_manifest:list[ships.ShipData] = [ships.ShipData(ships.shipLength[key],key) for key in ships.shipLength.keys()]
+	fleet_manifest = [
+		ships.ShipData(5, "Carrier"),
+		ships.ShipData(4, "Battleship"),
+		ships.ShipData(3, "Destroyer"),
+		ships.ShipData(3, "Submarine"),
+		ships.ShipData(2, "Tugboat")
+	]
 	
 	for s_data in fleet_manifest:
 		# Create dummy ships to pass into placeShip (Matzu's methods overwrite position/direction based on input/randomness)
-		dummy_ship:ships.Ship = ships.Ship(ships.Point(1,1), s_data, ships.Point(1,0))
-		player.placeShip(dummy_ship)
-		dummy_ship = ships.Ship(ships.Point(1,1), s_data, ships.Point(1,0))
-		enemy.placeShip(dummy_ship)
+		dummy_player_ship = ships.Ship(ships.Point(1,1), s_data, ships.Point(1,0))
+		player.placeShip(dummy_player_ship)
+		
+		dummy_npc_ship = ships.Ship(ships.Point(1,1), s_data, ships.Point(1,0))
+		enemy.placeShip(dummy_npc_ship)
 		
 	render.displayMessage("Setup Complete. Commencing Battle!")
 	
@@ -177,20 +182,25 @@ def main():
 		# Player Turn
 		render.displayMessage(f"{player.label}'s Turn")
 		render.displayShipSetup(player.userShips)
-		player.userHits.append(enemy.opponentHit(player.pickHit()))
+		
+		target = player.pickHit()
+		result = enemy.opponentHit(target)
+		player.userHits.append(result)
 		
 		# Check Win Condition
 		if enemy.noActiveShips():
-			render.displayMessage(f"{player.label} wins!")
+			render.displayMessage(f"Congratulations! {player.label} wins!")
 			break
 			
 		# Enemy Turn
 		render.displayMessage(f"{enemy.label}'s Turn")
-		enemy.userHits.append(player.opponentHit(enemy.pickHit()))
+		enemy_target = enemy.pickHit()
+		enemy_result = player.opponentHit(enemy_target)
+		enemy.userHits.append(enemy_result)
 		
 		# Check Loss Condition
 		if player.noActiveShips():
-			render.displayMessage(f"{enemy.label} wins!")
+			render.displayMessage(f"Defeat! {enemy.label} wins!")
 			break
 
 if __name__ == "__main__":
