@@ -40,11 +40,14 @@ class Actor:
 
 	def opponentHit(self,attack:ships.Point) -> ships.Hit:
 		for i in range(len(self.userShips)):
+			print(attack)
 			pts:list[ships.Point] = self.userShips[i].trueCoords()
+			print(*pts)
 			if attack in pts:
 				render.displayMessage(f"{self.label}: Your {self.userShips[i].beenHit()} has been hit.")
 				if not self.userShips[i].inPlay: render.displayMessage(f"Your {self.userShips[i].info.label} is sunk.")
 				return ships.Hit(attack,True)
+			
 		render.displayMessage(f"{self.label}: No ship of yours was hit.")
 		return ships.Hit(attack,False)
 
