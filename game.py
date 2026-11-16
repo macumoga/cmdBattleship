@@ -157,19 +157,18 @@ class SimpleNPC(Actor):
 def main():
 	render.displayMessage("Welcome to Battleship!")
 
-	player = PlayerTerminal("Player 1")
-	enemy = SimpleNPC()
+	player:Actor = PlayerTerminal("Player 1")
+	enemy:Actor = SimpleNPC()
 	
 	# Setup Phase
-	fleet_manifest = [ships.ShipData(ships.shipLength[key],key) for key in ships.shipLength.keys()]
+	fleet_manifest:list[ships.ShipData] = [ships.ShipData(ships.shipLength[key],key) for key in ships.shipLength.keys()]
 	
 	for s_data in fleet_manifest:
 		# Create dummy ships to pass into placeShip (Matzu's methods overwrite position/direction based on input/randomness)
-		dummy_player_ship = ships.Ship(ships.Point(1,1), s_data, ships.Point(1,0))
-		player.placeShip(dummy_player_ship)
-		
-		dummy_npc_ship = ships.Ship(ships.Point(1,1), s_data, ships.Point(1,0))
-		enemy.placeShip(dummy_npc_ship)
+		dummy_ship:ships.Ship = ships.Ship(ships.Point(1,1), s_data, ships.Point(1,0))
+		player.placeShip(dummy_ship)
+		dummy_ship = ships.Ship(ships.Point(1,1), s_data, ships.Point(1,0))
+		enemy.placeShip(dummy_ship)
 		
 	render.displayMessage("Setup Complete. Commencing Battle!")
 	
@@ -178,25 +177,20 @@ def main():
 		# Player Turn
 		render.displayMessage(f"{player.label}'s Turn")
 		render.displayShipSetup(player.userShips)
-		
-		target = player.pickHit()
-		result = enemy.opponentHit(target)
-		player.userHits.append(result)
+		player.userHits.append(enemy.opponentHit(player.pickHit()))
 		
 		# Check Win Condition
 		if enemy.noActiveShips():
-			render.displayMessage(f"Congratulations! {player.label} wins!")
+			render.displayMessage(f"{player.label} wins!")
 			break
 			
 		# Enemy Turn
 		render.displayMessage(f"{enemy.label}'s Turn")
-		enemy_target = enemy.pickHit()
-		enemy_result = player.opponentHit(enemy_target)
-		enemy.userHits.append(enemy_result)
+		enemy.userHits.append(player.opponentHit(enemy.pickHit()))
 		
 		# Check Loss Condition
 		if player.noActiveShips():
-			render.displayMessage(f"Defeat! {enemy.label} wins!")
+			render.displayMessage(f"{enemy.label} wins!")
 			break
 
 if __name__ == "__main__":
