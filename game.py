@@ -161,16 +161,6 @@ def main():
 	enemy = SimpleNPC()
 	
 	# Setup Phase
-	"""
-	fleet_manifest = [
-		ships.ShipData(5, "Carrier"),
-		ships.ShipData(4, "Battleship"),
-		ships.ShipData(3, "Destroyer"),
-		ships.ShipData(3, "Submarine"),
-		ships.ShipData(2, "Tugboat")
-	]
-	"""
-
 	fleet_manifest = [ships.ShipData(ships.shipLength[key],key) for key in ships.shipLength.keys()]
 	
 	for s_data in fleet_manifest:
