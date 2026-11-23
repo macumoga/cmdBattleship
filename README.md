@@ -1,5 +1,5 @@
 # Battleship (cmd)
--# Command line Battleship Game
+Command line Battleship Game
 
 ## Launch
 
